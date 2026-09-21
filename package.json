@@ -1,0 +1,10 @@
+{
+  "name": "fixit",
+  "private": true,
+  "scripts": {
+    "client": "npm --prefix client run dev",
+    "server": "npm --prefix server run dev",
+    "test": "npm --prefix client test -- --run && npm --prefix server test -- --run",
+    "build": "npm --prefix client run build"
+  }
+}

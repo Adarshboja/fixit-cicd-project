@@ -1,0 +1,50 @@
+name: FixIt CI
+
+# This workflow runs when code is pushed to the main branch or when a PR is opened.
+# It checks that the app builds correctly and that tests pass before a merge is accepted.
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1) Download the repository code into the temporary GitHub runner.
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2) Install Node.js on the runner so npm commands can run.
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      # 3) Install the frontend dependencies in the client folder.
+      - name: Install frontend dependencies
+        run: npm --prefix client ci
+
+      # 4) Install the backend dependencies in the server folder.
+      - name: Install backend dependencies
+        run: npm --prefix server ci
+
+      # 5) Run the frontend tests. If they fail, the workflow stops here.
+      - name: Run frontend tests
+        run: npm --prefix client test -- --run
+
+      # 6) Run the backend tests, including auth and complaint workflows.
+      - name: Run backend tests
+        run: npm --prefix server test -- --run
+
+      # 7) Build the Vite frontend to confirm it compiles for production.
+      - name: Build frontend
+        run: npm --prefix client run build
+
+      # 8) Final status check. This step intentionally avoids starting MongoDB,
+      # because the backend tests already validate the runtime application with an in-memory database.
+      - name: CI status check
+        run: echo "CI completed successfully. Tests and frontend build passed."
